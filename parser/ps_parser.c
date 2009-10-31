@@ -80,9 +80,11 @@ static ps_node * _ps_object_or_array(struct ps_parser_state *state, int *pos, in
     struct arrayval *pairs = malloc(len * sizeof *pairs);
     for (int i = 0; i < len; i++) {
         pairs[i].key = ps_dispatch(state, pos);
-        if (!pairs[i].key) return NULL;
+        if (!pairs[i].key || pairs[i].key == PS_PARSE_FAILURE)
+            return pairs[i].key;
         pairs[i].val = ps_dispatch(state, pos);
-        if (!pairs[i].val) return NULL;
+        if (!pairs[i].val || pairs[i].val == PS_PARSE_FAILURE)
+            return pairs[i].val;
     }
 
     // putting entries in order allows bsearch() on them
