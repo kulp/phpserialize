@@ -251,6 +251,14 @@ static ps_node *ps_handle_string(struct ps_parser_state *state, int *pos)
         return PS_PARSE_FAILURE;
     }
 
+    if (strncmp(&input[2], ":{", 2)) {
+        char got[3] = { 0 };
+        strncpy(got, &input[2], sizeof got);
+        _err("ERROR: Parse failure in %s : expecting \":{\", got %s",
+                __func__, got);
+        return PS_PARSE_FAILURE;
+    }
+
     (*pos) += next - input + 2; // 1 for colon, 1 for opening quote
     input = state->chunker(state->userdata, *pos, len);
     if (!input)
