@@ -253,7 +253,7 @@ static ps_node *ps_handle_string(struct ps_parser_state *state, int *pos)
 
     if (strncmp(&input[2], ":{", 2)) {
         char got[3] = { 0 };
-        strncpy(got, &input[2], sizeof got);
+        strncpy(got, &input[2], 2);
         _err("ERROR: Parse failure in %s : expecting \":{\", got %s",
                 __func__, got);
         return PS_PARSE_FAILURE;
