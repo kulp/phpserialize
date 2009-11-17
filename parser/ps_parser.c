@@ -340,7 +340,7 @@ static int _ps_dump_recurse(FILE *f, const ps_node *node, int level, int flags)
         case NODE_NULL  : fprintf(f, "N");                                break;
         case NODE_OBJECT:
             what = &node->val.o.val;
-            fprintf(f, "O:%u:\"%s\":%ld:{%s", strlen(v->o.type), v->o.type, v->o.val.len, pretty ? "\n" : "");
+            fprintf(f, "O:%u:\"%s\":%ld:{%s", (unsigned int)strlen(v->o.type), v->o.type, v->o.val.len, pretty ? "\n" : "");
             goto inside_array;
         case NODE_ARRAY :
             if (!what) what = &node->val.a;
