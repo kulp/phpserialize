@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syck.h>
 #include <unistd.h>
 
 void (*ps_parser_error_handler)(const char *msg);
