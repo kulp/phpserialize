@@ -27,8 +27,11 @@ void (*ps_parser_error_handler)(const char *msg);
 #define try_parse(Input, Val, Func, Next, ...) \
     Val = Func((Input), __VA_ARGS__); \
     if ((Next) == (Input)) { \
+        char _temp[20]; \
+        int len = snprintf(_temp, sizeof _temp, "%-16s...", (Input)); \
+        if (len >= 19) snprintf(&_temp[16], 4, "..."); \
         _err("ERROR: Parse failure in %s : could not parse '%s' with " #Func, \
-             __func__, (Input)); \
+             __func__, _temp); \
         return PS_PARSE_FAILURE; \
     }
 
