@@ -24,6 +24,14 @@ void (*ps_parser_error_handler)(const char *msg);
     } \
 } while (0)
 
+#define try_parse(Input, Val, Func, Next, ...) \
+    Val = Func((Input), __VA_ARGS__); \
+    if ((Next) == (Input)) { \
+        _err("ERROR: Parse failure in %s : could not parse '%s' with " #Func, \
+             __func__, (Input)); \
+        return PS_PARSE_FAILURE; \
+    }
+
 static int compare_pairs(const void *a, const void *b)
 {
     int rc = 0;
@@ -61,11 +69,8 @@ static ps_node *ps_handle_bool(struct ps_parser_state *state, int *pos)
         return NULL;
 
     char *next;
-    int intval = strtol(&input[2], &next, 10);
-    if (next == input) {
-        _err("ERROR: Parse failure in %s", __func__);
-        return PS_PARSE_FAILURE;
-    }
+    int intval;
+    try_parse(&input[2], intval, strtol, next, &next, 10);
 
     result = malloc(sizeof *result);
     *result = (ps_node){ .type = NODE_BOOL, .val = { .b = intval } };
@@ -105,11 +110,8 @@ static ps_node *ps_handle_array(struct ps_parser_state *state, int *pos)
         return NULL;
 
     char *next;
-    int len = strtol(&input[2], &next, 10);
-    if (next == input) {
-        _err("ERROR: Parse failure in %s", __func__);
-        return PS_PARSE_FAILURE;
-    }
+    int len;
+    try_parse(&input[2], len, strtol, next, &next, 10);
 
     int inc = next - input + 2; // 2 for ":{"
     (*pos) += inc;
@@ -147,11 +149,8 @@ static ps_node *ps_handle_float(struct ps_parser_state *state, int *pos)
         return NULL;
 
     char *next;
-    long double floatval = strtold(&input[2], &next);
-    if (next == input) {
-        _err("ERROR: Parse failure in %s", __func__);
-        return PS_PARSE_FAILURE;
-    }
+    long double floatval;
+    try_parse(&input[2], floatval, strtold, next, &next);
 
     result = malloc(sizeof *result);
     *result = (ps_node){ .type = NODE_FLOAT, .val = { .d = floatval } };
@@ -169,11 +168,8 @@ static ps_node *ps_handle_int(struct ps_parser_state *state, int *pos)
         return NULL;
 
     char *next;
-    long intval = strtol(&input[2], &next, 10);
-    if (next == input) {
-        _err("ERROR: Parse failure in %s", __func__);
-        return PS_PARSE_FAILURE;
-    }
+    long intval;
+    try_parse(&input[2], intval, strtol, next, &next, 10);
 
     result = malloc(sizeof *result);
     *result = (ps_node){ .type = NODE_INT, .val = { .i = intval } };
@@ -201,11 +197,8 @@ static ps_node *ps_handle_object(struct ps_parser_state *state, int *pos)
     if (!input) return PS_PARSE_FAILURE;
 
     char *next;
-    int typelen = strtol(&input[2], &next, 10);
-    if (next == input) {
-        _err("ERROR: Parse failure in %s", __func__);
-        return PS_PARSE_FAILURE;
-    }
+    int typelen;
+    try_parse(&input[2], typelen, strtol, next, &next, 10);
 
     (*pos) += next - input;;
     // +2 for quotes
@@ -219,11 +212,8 @@ static ps_node *ps_handle_object(struct ps_parser_state *state, int *pos)
     input = state->chunker(state->userdata, *pos, 10);
     if (!input) return PS_PARSE_FAILURE;
 
-    int len = strtol(input, &next, 10);
-    if (next == input) {
-        _err("ERROR: Parse failure in %s", __func__);
-        return PS_PARSE_FAILURE;
-    }
+    int len;
+    try_parse(&input[2], len, strtol, next, &next, 10);
 
     (*pos) += next - input + 2; // 2 for ":{"
 
@@ -246,11 +236,8 @@ static ps_node *ps_handle_string(struct ps_parser_state *state, int *pos)
         return NULL;
 
     char *next;
-    int len = strtol(&input[2], &next, 10);
-    if (next == input) {
-        _err("ERROR: Parse failure in %s", __func__);
-        return PS_PARSE_FAILURE;
-    }
+    int len;
+    try_parse(&input[2], len, strtol, next, &next, 10);
 
     /// @todo make an expect() call
     if (strncmp(next, ":\"", 2)) {
@@ -309,7 +296,8 @@ static ps_node *ps_dispatch(struct ps_parser_state *state, int *pos)
         case ';': (*pos)++; result = ps_dispatch(state, pos); break;
 
         default:
-            _err("ERROR: Parse failure in %s", __func__);
+            _err("ERROR: Parse failure in %s : unexpected character '%c'",
+                 __func__, input[here]);
             return PS_PARSE_FAILURE;
     }
 
