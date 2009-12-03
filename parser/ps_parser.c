@@ -216,7 +216,7 @@ static ps_node *ps_handle_object(struct ps_parser_state *state, int *pos)
     if (!input) return PS_PARSE_FAILURE;
 
     int len;
-    try_parse(&input[2], len, strtol, next, &next, 10);
+    try_parse(input, len, strtol, next, &next, 10);
 
     (*pos) += next - input + 2; // 2 for ":{"
 
