@@ -1,3 +1,5 @@
+#define _BSD_SOURCE /* for strdup */
+
 #include "ps_parser.h"
 #include "ps_parser_internal.h"
 #include "ps_parser_store.h"
