@@ -147,7 +147,7 @@ error:
     goto done;
 }
 
-static int process(struct ps_parser_state *state, ps_dumper_t dumper,
+static int process(struct ps_parser_state **state, ps_dumper_t dumper,
         const char *in, const char *out)
 {
     int rc = 0;
@@ -161,8 +161,8 @@ static int process(struct ps_parser_state *state, ps_dumper_t dumper,
     p_init = ps_read_file_init;
     p_fini = ps_read_file_fini;
 #endif
-    rc = ps_init(&state);
-    rc = (*p_init)(state, (void*)in);
+    rc = ps_init(state);
+    rc = (*p_init)(*state, (void*)in);
     if (rc) {
         fprintf(stderr, "Failed to open input file '%s'\n", in);
         return EXIT_FAILURE;
@@ -179,13 +179,13 @@ static int process(struct ps_parser_state *state, ps_dumper_t dumper,
         f = stdout;
     }
 
-    ps_node *result = ps_parse(state);
+    ps_node *result = ps_parse(*state);
     if (result == PS_PARSE_FAILURE)
         goto error;
 
     rc = dumper(f, result, PS_PRINT_PRETTY);
-    rc = (*p_fini)(state);
-    rc = ps_fini(&state);
+    rc = (*p_fini)(*state);
+    rc = ps_fini(state);
     ps_free(result);
 
     fclose(f);
@@ -228,10 +228,10 @@ int main(int argc, char *argv[])
     }
 
     if (argc - optind < 1)
-        rc = process(state, dumper, "-", out);
+        rc = process(&state, dumper, "-", out);
 
     for (int i = optind; i < argc && !rc; i++)
-        rc = process(state, dumper, argv[i], out);
+        rc = process(&state, dumper, argv[i], out);
 
     free(out);
 
