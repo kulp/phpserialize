@@ -3,7 +3,6 @@ use strict;
 
 use Perl6::Slurp;
 use YAML qw(Dump);
-use WWW::Mechanize;
 
 my %map = (
     'a' => \&hash,
@@ -14,10 +13,8 @@ my %map = (
     ';' => \&swallow,
 );
 
-#my $within = 0;
 my $text   = slurp;
 my $pos    = 0;
-#my $len    = length $text;
 
 my $data = dispatch($text, \$pos);
 print Dump $data;
